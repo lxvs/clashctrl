@@ -86,7 +86,7 @@ list_op () {
     test $# -eq 0 || error "too many arguments"
     curl -sS -X GET \
         -H "Content-Type: application/json" \
-        "127.0.0.1:9090/proxies"
+        "http://127.0.0.1:9090/proxies"
 }
 
 get_help () {
@@ -112,7 +112,7 @@ get_op () {
     esac
     curl -sS -X GET \
         -H "Content-Type: application/json" \
-        "127.0.0.1:9090/proxies/$selector"
+        "http://127.0.0.1:9090/proxies/$selector"
 }
 
 switch_help () {
@@ -135,7 +135,7 @@ switch_op () {
     esac
     curl -sS -X PUT \
         -H "Content-Type: application/json" \
-        127.0.0.1:9090/proxies/GLOBAL \
+        http://127.0.0.1:9090/proxies/GLOBAL \
         -d "{\"name\": \"$proxy\"}"
 }
 

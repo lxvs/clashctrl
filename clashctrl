@@ -1,6 +1,12 @@
 #!/bin/bash
 set -o nounset
 
+error () {
+    local error="${1-unspecified error}"
+    >&2 printf "error: %s\n" "$1"
+    exit 1
+}
+
 list_help () {
 cat <<EOF
 usage: clashctrl list
@@ -10,11 +16,7 @@ EOF
 }
 
 list_op () {
-    if test $# -gt 0
-    then
-        >&2 printf "error: too many arguments\n"
-        return 1
-    fi
+    test $# -eq 0 || error "too many arguments"
     curl -sS -X GET \
         -H "Content-Type: application/json" \
         "127.0.0.1:9090/proxies"
@@ -38,8 +40,7 @@ get_op () {
         selector="$1"
         ;;
     *)
-        >&2 printf "error: too many arguments\n"
-        return 1
+        error "too many arguments"
         ;;
     esac
     curl -sS -X GET \
@@ -62,8 +63,7 @@ switch_op () {
         proxy="$1"
         ;;
     *)
-        >&2 printf "error: 'switch' takes 1 argument.\n"
-        return 1
+        error "'switch' takes 1 argument."
         ;;
     esac
     curl -sS -X PUT \
@@ -136,8 +136,7 @@ main () {
         ${op}_op "$@"
         ;;
     *)
-        >&2 printf "error: invalid operation: %s\n" "$op"
-        exit 1
+        error "invalid operation: $op"
         ;;
     esac
 }

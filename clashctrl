@@ -1,6 +1,33 @@
 #!/bin/bash
 set -o nounset
 
+get_help () {
+cat <<EOF
+usage: clashctrl get [<selector>]
+
+Get current <selector> proxy, <selector> is GLOBAL if not specified.
+EOF
+}
+
+get_op () {
+    local selector
+    case $# in
+    0)
+        selector="GLOBAL"
+        ;;
+    1)
+        selector="$1"
+        ;;
+    *)
+        >&2 printf "error: too many arguments\n"
+        return 1
+        ;;
+    esac
+    curl -sS -X GET \
+        -H "Content-Type: application/json" \
+        "127.0.0.1:9090/proxies/$selector"
+}
+
 switch_help () {
 cat <<EOF
 usage: clashctrl switch <proxy>
@@ -42,7 +69,7 @@ usage:
 
 operation:
     switch          switch current GLOBAL proxy
-    get             (yet to implement) get current GLOBAL proxy
+    get             get current GLOBAL proxy
     getall          (yet to implement) get all proxies
     curl            (yet to implement) custom curl
 
@@ -85,7 +112,7 @@ main () {
         Help
         exit 0
         ;;
-    switch)
+    switch|get)
         TryToHelp "$@"
         ${op}_op "$@"
         ;;

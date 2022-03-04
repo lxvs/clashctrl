@@ -180,8 +180,8 @@ TryToHelp () {
 
 main () {
     local op
-    readonly version='0.0.1'
-    readonly ghlink='https://github.com/lxvs/clashctrl'
+    local -r version='0.0.1'
+    local -r ghlink='https://github.com/lxvs/clashctrl'
     if test $# -eq 0
     then
         Help

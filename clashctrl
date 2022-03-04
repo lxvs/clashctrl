@@ -7,6 +7,47 @@ error () {
     exit 1
 }
 
+delay_help () {
+cat <<EOF
+usage: clashctrl delay <proxy> [<option> ...]
+
+options:
+    -t, --timeout   timeout in milliseconds, default is 1000
+    -u, --url       target url for testing, default is
+                    $delay_url
+EOF
+}
+
+delay_op () {
+    local val t u proxy
+    while test $# -ge 1
+    do
+        case "$1" in
+        -t|--timeout)
+            psv "$@"
+            shift 2
+            t="$val"
+            ;;
+        -u|--url)
+            psv "$@"
+            shift 2
+            u="$val"
+            ;;
+        *)
+            test "${proxy-}" && error "invalid argument: $1"
+            proxy="$1"
+            shift
+            ;;
+        esac
+    done
+    test "${proxy-}" || error "no proxy specified"
+    curl -sS -G -X GET \
+        "http://127.0.0.1:9090/proxies/${proxy}/delay" \
+        -H "Content-Type: application/json" \
+        -d "timeout=${t-1000}" \
+        -d "url=${u-${delay_url}}"
+}
+
 curl_help () {
 cat <<EOF
 usage: clashctrl curl [<option> ...] <url>
@@ -157,6 +198,7 @@ operation:
     switch      switch current GLOBAL proxy
     get         get current GLOBAL proxy
     list        list all proxies
+    delay       get latency of a proxy
     curl        custom curl
 
 Use clashctrl <operation> --help for more about <operation>.
@@ -182,6 +224,7 @@ main () {
     local op
     local -r version='0.0.1'
     local -r ghlink='https://github.com/lxvs/clashctrl'
+    local -r delay_url='http://www.gstatic.com/generate_204'
     if test $# -eq 0
     then
         Help
@@ -198,7 +241,7 @@ main () {
         Help
         exit 0
         ;;
-    switch|get|list|curl)
+    switch|get|list|delay|curl)
         TryToHelp "$@"
         ${op}_op "$@"
         ;;

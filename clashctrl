@@ -7,6 +7,73 @@ error () {
     exit 1
 }
 
+curl_help () {
+cat <<EOF
+usage: clashctrl curl [<option> ...] <url>
+
+Send custom curl requests.
+If url starts with '/', prefix 'http://127.0.0.1:9090'.
+
+options:
+    -X, --request   request, default is GET; if -d/--data is specified
+                    and -G/--get is not, default is PUT instead
+                    PUT (when body is specified)
+    -H, --header    header, default is "Content-Type: application/json"
+    -d, --data      data
+    -G, --get       make all data specified with -d or --data to be used in
+                    an HTTP GET request instead of the POST request that
+                    otherwise would be used. The data will be appended to
+                    the URL with a '?' separator.
+
+EOF
+}
+
+psv () {
+    test $# -ge 2 || error "$1 requires a value"
+    val="$2"
+}
+
+curl_op () {
+    local X H d G url
+    local val
+    local urlprefix='http://127.0.0.1:9090'
+    while test $# -ge 1
+    do
+        case "$1" in
+        -X|--request)
+            psv "$@"
+            shift 2
+            X="$val"
+            ;;
+        -H|--header)
+            psv "$@"
+            shift 2
+            H="$val"
+            ;;
+        -d|--data)
+            psv "$@"
+            shift 2
+            d="$val"
+            ;;
+        -G|--get)
+            G="-G"
+            shift
+            ;;
+        *)
+            test "${url-}" && error "invalid argument: $1"
+            url="$1"
+            shift
+            ;;
+        esac
+    done
+    test "${url-}" || error "no URL specified"
+    test ! "${X-}" && test "${d-}" && test ! "${G-}" && X="PUT"
+    printf "%s" "$url" | grep -q '^/' && url="${urlprefix}${url}"
+    curl -sS ${G-} -X "${X-GET}" "$url" \
+        -H "${H-Content-Type: application/json}" \
+        ${d:+-d "$d"}
+}
+
 list_help () {
 cat <<EOF
 usage: clashctrl list
@@ -90,7 +157,7 @@ operation:
     switch          switch current GLOBAL proxy
     get             get current GLOBAL proxy
     list            list all proxies
-    curl            (yet to implement) custom curl
+    curl            custom curl
 
 Use clashctrl <operation> --help for more about <operation>.
 EOF
@@ -131,7 +198,7 @@ main () {
         Help
         exit 0
         ;;
-    switch|get|list)
+    switch|get|list|curl)
         TryToHelp "$@"
         ${op}_op "$@"
         ;;

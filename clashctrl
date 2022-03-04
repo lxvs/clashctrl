@@ -154,10 +154,10 @@ usage:
     clashctrl -v | --version
 
 operation:
-    switch          switch current GLOBAL proxy
-    get             get current GLOBAL proxy
-    list            list all proxies
-    curl            custom curl
+    switch      switch current GLOBAL proxy
+    get         get current GLOBAL proxy
+    list        list all proxies
+    curl        custom curl
 
 Use clashctrl <operation> --help for more about <operation>.
 EOF
